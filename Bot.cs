@@ -1,4 +1,5 @@
-﻿using DSharpPlus;
+﻿using discordBot.Commands;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
@@ -17,14 +18,17 @@ namespace discordBot {
 		public CommandsNextExtension Commands { get; private set; }
 
 		public async Task RunAsync() {
+			// sets up our api in a way that prevents hardcoding the api-key by using a file reading system
 			var json = string.Empty;
 			using(var fs = File.OpenRead("config.json"))
 			using(var sr = new StreamReader(fs, new UTF8Encoding(false)))
 				json = await sr.ReadToEndAsync();
 
 			var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
-
+			
+			// creating conditions of our new bot client instance
 			var config = new DiscordConfiguration() {
+				Intents = DiscordIntents.All,
 				Token = configJson.Token,
 				TokenType = TokenType.Bot,
 				AutoReconnect = true,
@@ -39,7 +43,12 @@ namespace discordBot {
 				StringPrefixes = new string[] { configJson.Prefix },
 				EnableMentionPrefix = true,
 				EnableDms = true,
+				EnableDefaultHelp = true,
 			};
+
+			Commands = Client.UseCommandsNext(commandsConfig);
+			// register commands
+			Commands.RegisterCommands<TestCommands>();
 
 			await Client.ConnectAsync();
 			await Task.Delay(-1);
