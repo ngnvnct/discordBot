@@ -48,14 +48,18 @@ namespace discordBot {
 
 			Commands = Client.UseCommandsNext(commandsConfig);
 			// register commands
+			Commands.RegisterCommands<RealCommands>();
 			Commands.RegisterCommands<TestCommands>();
+			Commands.RegisterCommands<GameCommands>();
+
+			Client.Ready += OnClientReady;
 
 			await Client.ConnectAsync();
 			await Task.Delay(-1);
 
 		}
 
-		private Task OnClientReady(ReadyEventArgs e) {
+		private Task OnClientReady(DiscordClient s, ReadyEventArgs e) {
 			return Task.CompletedTask;
 		}
 	}

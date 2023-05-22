@@ -263,3 +263,6 @@ FakesAssemblies/
 *.opt
 
 config.json
+Commands/ExternalClasses/CardBuilder.cs
+Commands/GameCommands.cs
+Commands/TestCommands.cs
