@@ -11,5 +11,7 @@ namespace discordBot {
 		public string Token { get; private set; }
 		[JsonProperty("prefix")]
 		public string Prefix { get; private set; }
+		[JsonProperty("guildID")]
+		public ulong GuildID { get; private set; }
 	}
 }

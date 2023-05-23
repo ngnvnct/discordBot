@@ -4,6 +4,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,9 +14,10 @@ using System.Threading.Tasks;
 
 namespace discordBot {
 	public class Bot {
-		public DiscordClient Client { get; private set; }
-		public InteractivityExtension Interactivity { get; private set; }
-		public CommandsNextExtension Commands { get; private set; }
+		public DiscordClient ?Client { get; private set; }
+		public InteractivityExtension ?Interactivity { get; private set; }
+		public CommandsNextExtension ?Commands { get; private set; }
+		public SlashCommandsExtension ?SlashCommands { get; private set; }
 
 		public async Task RunAsync() {
 			// sets up our api in a way that prevents hardcoding the api-key by using a file reading system
@@ -44,13 +46,20 @@ namespace discordBot {
 				EnableMentionPrefix = true,
 				EnableDms = true,
 				EnableDefaultHelp = true,
+				UseDefaultCommandHandler = false
 			};
 
+			
+
 			Commands = Client.UseCommandsNext(commandsConfig);
+			SlashCommands = Client.UseSlashCommands();
 			// register commands
 			Commands.RegisterCommands<RealCommands>();
 			Commands.RegisterCommands<TestCommands>();
 			Commands.RegisterCommands<GameCommands>();
+			SlashCommands.RegisterCommands<SlashCommands>(configJson.GuildID);
+
+
 
 			Client.Ready += OnClientReady;
 
