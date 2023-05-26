@@ -1,10 +1,14 @@
 ﻿using discordBot.Commands;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.CommandsNext.Exceptions;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -49,17 +53,18 @@ namespace discordBot {
 				UseDefaultCommandHandler = false
 			};
 
-			
 
-			Commands = Client.UseCommandsNext(commandsConfig);
-			SlashCommands = Client.UseSlashCommands();
 			// register commands
+			Commands = Client.UseCommandsNext(commandsConfig);
 			Commands.RegisterCommands<RealCommands>();
 			Commands.RegisterCommands<TestCommands>();
-			Commands.RegisterCommands<GameCommands>();
+
+			SlashCommands = Client.UseSlashCommands();
 			SlashCommands.RegisterCommands<SlashCommands>(configJson.GuildID);
 
-
+			// error handling
+			Commands.CommandErrored += OnCommandError;
+            SlashCommands.SlashCommandErrored += OnSlashCommandError;
 
 			Client.Ready += OnClientReady;
 
@@ -68,7 +73,48 @@ namespace discordBot {
 
 		}
 
-		private Task OnClientReady(DiscordClient s, ReadyEventArgs e) {
+
+        private async Task OnSlashCommandError(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandErrorEventArgs e) {
+            if (e.Exception is SlashExecutionChecksFailedException) {
+				var castedException = (SlashExecutionChecksFailedException)e.Exception;
+				string cooldownTimer = string.Empty;
+
+				foreach (var check in castedException.FailedChecks) {
+					var cooldown = (SlashCooldownAttribute)check;
+					TimeSpan timeLeft = cooldown.GetRemainingCooldown(e.Context);
+					cooldownTimer = timeLeft.ToString(@"hh\:mm\:ss");
+				}
+				var cooldownMessage = new DiscordInteractionResponseBuilder()
+											.AddEmbed(new DiscordEmbedBuilder()
+											.WithColor(DiscordColor.Red)
+											.WithTitle("Max amount of uses for this command, please wait for the cooldown to end.")
+											.WithDescription(cooldownTimer)
+											);
+				await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, cooldownMessage);
+			}
+        }
+
+
+        private async Task OnCommandError(CommandsNextExtension sender, CommandErrorEventArgs e) {
+            if (e.Exception is ChecksFailedException) {
+				var castedException = (ChecksFailedException)e.Exception;
+				string cooldownTimer = string.Empty;
+
+				foreach (var check in castedException.FailedChecks) {
+					var cooldown = (CooldownAttribute)check;
+					TimeSpan timeLeft = cooldown.GetRemainingCooldown(e.Context);
+					cooldownTimer = timeLeft.ToString(@"hh\:mm\:ss");
+				}
+				var cooldownMessage = new DiscordEmbedBuilder() {
+					Title = "Wait for the cooldown to end",
+					Description = cooldownTimer,
+					Color = DiscordColor.Red
+				};
+				await e.Context.Channel.SendMessageAsync(cooldownMessage);
+			}
+        }
+
+        private Task OnClientReady(DiscordClient s, ReadyEventArgs e) {
 			return Task.CompletedTask;
 		}
 	}

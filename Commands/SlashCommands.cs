@@ -1,6 +1,7 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +16,11 @@ namespace discordBot.Commands {
 		}
 
 		[SlashCommand("repo", "Link to the LC solutions github repo.")]
+		[SlashCooldown(1, 10, SlashCooldownBucketType.User)]
 		public async Task GetRepoLink(InteractionContext ctx) {
 			var linkMessage = new DiscordInteractionResponseBuilder()
 								.AddEmbed(new DiscordEmbedBuilder()
+
 								.WithColor(DiscordColor.Goldenrod)
 								.WithTitle("LeetCode solutions repository")
 								.WithAuthor("thuanle123")

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace discordBot.Commands {
 	public class RealCommands : BaseCommandModule {
 		[Command("link")]
+		[Cooldown(1, 10, CooldownBucketType.User)]
 		public async Task GetLink(CommandContext ctx) {
 			var embedMessage = new DiscordMessageBuilder()
 				.AddEmbed(new DiscordEmbedBuilder()
