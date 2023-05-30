@@ -27,6 +27,7 @@ namespace discordBot.Commands {
         }
 
         [SlashCommand("createpoll", "create a poll and let users vote")]
+        [SlashCooldown(1, 60, SlashCooldownBucketType.Channel)]
         public async Task PollCommand(InteractionContext ctx, [Option("question", "poll subject")] string question,
                                                                 [Choice("60s", 60)][Choice("30s", 30)][Choice("15s", 15)]
                                                                     [Option("timelimit", "the amount of time that the poll is active")] long timelimit,
@@ -38,10 +39,7 @@ namespace discordBot.Commands {
             await ctx.DeferAsync();
 
             var interactivity = ctx.Client.GetInteractivity();
-            int count1 = 0; 
-            int count2 = 0;	
-            int count3 = 0; 
-            int count4 = 0;
+            int count1 = 0; int count2 = 0;	int count3 = 0; int count4 = 0;
             TimeSpan timer = TimeSpan.FromSeconds(timelimit);
             string title = String.Join("", question);
 
@@ -70,18 +68,14 @@ namespace discordBot.Commands {
             var result = await interactivity.CollectReactionsAsync(message, timer);
 
             foreach (var emoji in result) {
-                if (emoji.Emoji == optionsEmojis[0]) {
+                if (emoji.Emoji == optionsEmojis[0])
                     count1++;
-                }
-                if (emoji.Emoji == optionsEmojis[1]) {
+                if (emoji.Emoji == optionsEmojis[1])
                     count2++;
-                }
-                if (emoji.Emoji == optionsEmojis[2]) {
+                if (emoji.Emoji == optionsEmojis[2])
                     count3++;
-                }
-                if (emoji.Emoji == optionsEmojis[3]) {
+                if (emoji.Emoji == optionsEmojis[3]) 
                     count4++;
-                }
             }
 
             int totalVotes = count1 + count2 + count3 + count4;
@@ -91,6 +85,7 @@ namespace discordBot.Commands {
                                         $"{optionsEmojis[2]} | {count3} votes\n" +
                                         $"{optionsEmojis[3]} | {count4} votes\n\n" +
                                         $"Total votes: {totalVotes}"    );
+
             var resultMessage = new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder() {
                     Color = DiscordColor.Green,

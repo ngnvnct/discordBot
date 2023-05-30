@@ -1,4 +1,5 @@
 ﻿using discordBot.Commands;
+using discordBot.ExternalClasses;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -20,44 +21,22 @@ namespace discordBot {
     public class Bot {
         public DiscordClient ?Client { get; private set; }
         public InteractivityExtension ?Interactivity { get; private set; }
-        public CommandsNextExtension ?Commands { get; private set; }
         public SlashCommandsExtension ?SlashCommands { get; private set; }
 
         public async Task RunAsync() {
             // sets up our api in a way that prevents hardcoding the api-key by using a file reading system
             // coulda also used user secrets but whateva
-            var json = string.Empty;
-            using(var fs = File.OpenRead("config.json"))
-            using(var sr = new StreamReader(fs, new UTF8Encoding(false)))
-                json = await sr.ReadToEndAsync();
 
-            var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
-            
-            // creating conditions of our new bot client instance
-            var config = new DiscordConfiguration() {
-                Intents = DiscordIntents.All,
-                Token = configJson.Token,
-                TokenType = TokenType.Bot,
-                AutoReconnect = true,
-            };
+            var Config = new CreateConfig();
 
-            Client = new DiscordClient(config);
+            Client = new DiscordClient(Config.Configuration);
             Client.UseInteractivity(new InteractivityConfiguration() {
                 Timeout = TimeSpan.FromMinutes(2)
             });
 
-            var commandsConfig = new CommandsNextConfiguration() {
-                StringPrefixes = new string[] { configJson.Prefix },
-                EnableMentionPrefix = true,
-                EnableDms = true,
-                EnableDefaultHelp = true,
-                UseDefaultCommandHandler = true
-            };
-
-
             // register commands
             SlashCommands = Client.UseSlashCommands();
-            SlashCommands.RegisterCommands<SlashCommands>(configJson.GuildID);
+            SlashCommands.RegisterCommands<SlashCommands>(Config.ConfigJson.GuildID);
 
             // error handling
             SlashCommands.SlashCommandErrored += OnSlashCommandError;
