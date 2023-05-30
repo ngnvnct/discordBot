@@ -28,7 +28,7 @@ namespace discordBot.Commands {
 
         [SlashCommand("createpoll", "create a poll and let users vote")]
         [SlashCooldown(1, 60, SlashCooldownBucketType.Channel)]
-        public async Task PollCommand(InteractionContext ctx, [Option("question", "poll subject")] string question,
+        public async Task PollCommand(InteractionContext ctx,   [Option("question", "poll subject")] string question,
                                                                 [Choice("60s", 60)][Choice("30s", 30)][Choice("15s", 15)]
                                                                     [Option("timelimit", "the amount of time that the poll is active")] long timelimit,
                                                                 [Option("option1", "first option")] string option1,
@@ -96,7 +96,23 @@ namespace discordBot.Commands {
             await ctx.Channel.SendMessageAsync(resultMessage);
 
         }
-        
+
+        [SlashCommand("caption", "attach an image and then write a caption")]
+        public async Task CaptionCommand(InteractionContext ctx,    [Option("image", "attach an image to caption")] DiscordAttachment image,
+                                                                    [Option("caption", "bottom text")] string caption) {
+            await ctx.DeferAsync();
+
+            var captionMessage = new DiscordMessageBuilder()
+                .AddEmbed(new DiscordEmbedBuilder()
+
+                .WithImageUrl(image.Url)
+                .WithFooter(caption)
+                );
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("..."));
+            await ctx.Channel.SendMessageAsync(captionMessage);
+        }
+
         [SlashCommand("test", "test slash command using whatever the fk")]
         public async Task TestCommand(InteractionContext ctx,   [Choice("variable", "value")]
                                                                 [Option("displayName", "description of what to input")] string text) {
