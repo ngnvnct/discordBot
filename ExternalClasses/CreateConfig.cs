@@ -1,4 +1,6 @@
 ﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.SlashCommands;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,12 +21,13 @@ namespace discordBot.ExternalClasses {
 
             this.ConfigJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
-            this.Configuration = new DiscordConfiguration() { 
+            this.Configuration = new DiscordConfiguration() {
                 Intents = DiscordIntents.All,
                 Token = this.ConfigJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
             };
+
         }
     }
 }

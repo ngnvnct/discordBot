@@ -1,6 +1,7 @@
 ﻿using discordBot.Commands;
 using discordBot.ExternalClasses;
 using DSharpPlus;
+using DSharpPlus.AsyncEvents;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -42,12 +43,20 @@ namespace discordBot {
             SlashCommands.SlashCommandErrored += OnSlashCommandError;
 
             Client.Ready += OnClientReady;
+            Client.ComponentInteractionCreated += OnButtonPress;
 
             await Client.ConnectAsync();
             await Task.Delay(-1);
 
         }
 
+        private Task OnButtonPress(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
+            switch (e.Interaction.Data.CustomId) {
+                case "ex":
+                    // functionality here
+                    break;
+            }
+        }
 
         private async Task OnSlashCommandError(SlashCommandsExtension sender, DSharpPlus.SlashCommands.EventArgs.SlashCommandErrorEventArgs e) {
             if (e.Exception is SlashExecutionChecksFailedException) {

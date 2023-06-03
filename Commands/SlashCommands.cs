@@ -19,6 +19,7 @@ namespace discordBot.Commands {
 
                                 .WithColor(DiscordColor.Goldenrod)
                                 .WithTitle("LeetCode solutions repository")
+                                .WithUrl("https://github.com/thuanle123/Leetcode")
                                 .WithAuthor("thuanle123")
                                 .WithDescription("Solutions written in Python, C#, and Java!\n https://github.com/thuanle123/Leetcode")
                                 );	
@@ -100,6 +101,7 @@ namespace discordBot.Commands {
         [SlashCommand("caption", "attach an image and then write a caption")]
         public async Task CaptionCommand(InteractionContext ctx,    [Option("image", "attach an image to caption")] DiscordAttachment image,
                                                                     [Option("caption", "bottom text")] string caption) {
+
             await ctx.DeferAsync();
 
             var captionMessage = new DiscordMessageBuilder()
@@ -109,10 +111,27 @@ namespace discordBot.Commands {
                 .WithFooter(caption)
                 );
 
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("..."));
+            await ctx.DeleteResponseAsync();
             await ctx.Channel.SendMessageAsync(captionMessage);
         }
 
+        [SlashCommand("help", "general help command for all commands offered")]
+        public async Task HelpCommand(InteractionContext ctx) {
+
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            var leetcodeButton = new DiscordButtonComponent(ButtonStyle.Primary, "leetcodeButton", "LeetCode");
+            var communityButton = new DiscordButtonComponent(ButtonStyle.Primary, "communityButton", "Community");
+
+            var helpMessage = new DiscordEmbedBuilder()
+                .WithColor(DiscordColor.Lilac)
+                .WithTitle("Help menu")
+                .WithDescription("Click on a button for more information about the command!");
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(helpMessage).AddComponents(leetcodeButton, communityButton));
+        }
+
+        
         [SlashCommand("test", "test slash command using whatever the fk")]
         public async Task TestCommand(InteractionContext ctx,   [Choice("variable", "value")]
                                                                 [Option("displayName", "description of what to input")] string text) {
