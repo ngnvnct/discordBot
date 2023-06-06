@@ -13,6 +13,7 @@
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.4.1" />
     <PackageReference Include="DSharpPlus.SlashCommands" Version="4.4.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Octokit" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>

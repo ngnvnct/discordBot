@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,7 @@ namespace discordBot {
 		public string Prefix { get; private set; }
 		[JsonProperty("guildID")]
 		public ulong GuildID { get; private set; }
+		[JsonProperty("githubToken")]
+		public string GithubToken { get; private set; }
 	}
 }

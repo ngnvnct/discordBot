@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace discordBot.Commands {
     public class SlashCommands : ApplicationCommandModule {
+        
+        // LEETCODE REPO RELATED COMMANDS
+
         [SlashCommand("repo", "Link to the LC solutions github repo.")]
         [SlashCooldown(1, 10, SlashCooldownBucketType.User)]
         public async Task GetRepoLink(InteractionContext ctx) {
@@ -26,6 +29,8 @@ namespace discordBot.Commands {
                                 
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, linkMessage);
         }
+
+        // COMMUNITY RELATED COMMANDS
 
         [SlashCommand("createpoll", "create a poll and let users vote")]
         [SlashCooldown(1, 60, SlashCooldownBucketType.Channel)]
@@ -114,6 +119,8 @@ namespace discordBot.Commands {
             await ctx.DeleteResponseAsync();
             await ctx.Channel.SendMessageAsync(captionMessage);
         }
+
+        // MODERATION RELATED COMMANDS
 
         [SlashCommand("help", "general help command for all commands offered")]
         public async Task HelpCommand(InteractionContext ctx) {

@@ -2,6 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.SlashCommands;
 using Newtonsoft.Json;
+using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace discordBot.ExternalClasses {
     internal class CreateConfig {
         public ConfigJson ConfigJson { get; internal set; }
         public DiscordConfiguration Configuration { get; internal set; }
+        public GitHubClient GitHubClient { get; internal set; }
 
         public CreateConfig() {
             var json = string.Empty;
@@ -19,7 +21,12 @@ namespace discordBot.ExternalClasses {
             using(var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = sr.ReadToEnd();
 
+
             this.ConfigJson = JsonConvert.DeserializeObject<ConfigJson>(json);
+
+            this.GitHubClient = new GitHubClient(new ProductHeaderValue("loogibot")) {
+                Credentials = new Credentials(this.ConfigJson.GithubToken)
+            };
 
             this.Configuration = new DiscordConfiguration() {
                 Intents = DiscordIntents.All,

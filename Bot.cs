@@ -2,9 +2,6 @@
 using discordBot.ExternalClasses;
 using DSharpPlus;
 using DSharpPlus.AsyncEvents;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
@@ -12,6 +9,7 @@ using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Newtonsoft.Json;
+using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,20 +18,24 @@ using System.Threading.Tasks;
 
 namespace discordBot {
     public class Bot {
-        public DiscordClient ?Client { get; private set; }
-        public InteractivityExtension ?Interactivity { get; private set; }
-        public SlashCommandsExtension ?SlashCommands { get; private set; }
+        public DiscordClient? Client { get; private set; }
+        public InteractivityExtension? Interactivity { get; private set; }
+        public SlashCommandsExtension? SlashCommands { get; private set; }
 
         public async Task RunAsync() {
             // sets up our api in a way that prevents hardcoding the api-key by using a file reading system
             // coulda also used user secrets but whateva
-
             var Config = new CreateConfig();
 
             Client = new DiscordClient(Config.Configuration);
             Client.UseInteractivity(new InteractivityConfiguration() {
                 Timeout = TimeSpan.FromMinutes(2)
             });
+
+            // initializing github api client
+            var GitHubClient = Config.GitHubClient;
+
+            if (GitHubClient != null) { await Console.Out.WriteLineAsync("github client was initialized successfully"); }
 
             // register commands
             SlashCommands = Client.UseSlashCommands();
@@ -50,10 +52,29 @@ namespace discordBot {
 
         }
 
-        private Task OnButtonPress(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
+        private async Task OnButtonPress(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
             switch (e.Interaction.Data.CustomId) {
-                case "ex":
-                    // functionality here
+                case "leetcodeButton":
+                    var leetcodeCommandsList = new DiscordEmbedBuilder() {
+                        Color = DiscordColor.Gold,
+                        Title = "LeetCode Commands",
+                        Description = "***repo*** --> returns a link to the github repo with leetcode solutions\n\n" +
+                                      "more commands for getting and returning repo info will be added"
+                    };
+
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(leetcodeCommandsList));
+
+                    break;
+                case "communityButton":
+                    var communityCommandsList = new DiscordEmbedBuilder() {
+                        Color = DiscordColor.Lilac,
+                        Title = "Community Commands",
+                        Description = "***createpoll*** --> create a poll and vote with reactions set by the command\n\n" +
+                                      "***caption*** --> attach any saved image and give it a caption"
+                    };
+
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(communityCommandsList));
+
                     break;
             }
         }
