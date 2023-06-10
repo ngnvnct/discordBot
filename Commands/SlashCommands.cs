@@ -1,17 +1,22 @@
-﻿using DSharpPlus;
+﻿using discordBot.ExternalClasses;
+using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
+using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace discordBot.Commands {
     public class SlashCommands : ApplicationCommandModule {
-        
+
+        //public GitHubClient ghClient { get; set; }
+
         // LEETCODE REPO RELATED COMMANDS
 
         [SlashCommand("repo", "Link to the LC solutions github repo.")]
@@ -29,6 +34,39 @@ namespace discordBot.Commands {
                                 
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, linkMessage);
         }
+
+        [SlashCommand("root", "root directory info. test command for now to play around w github api")]
+        public async Task GetRoot(InteractionContext ctx) {
+            // GET /repos/{owner}/{repo}/contents/{path}
+            // owner and repo will be hard coded since these commands only concern ty's LC repo
+
+            await ctx.DeferAsync();
+
+            var config = new CreateConfig();
+            var ghClient = new GitHubClient(new ProductHeaderValue("loogibot")) {
+                Credentials = config.GitHubToken
+            };
+
+            
+            var info = await ghClient.Repository.Content.GetAllContents("thuanle123", "Leetcode");
+
+            string message = string.Empty;
+            foreach (var item in info) {
+                if(item.Type == ContentType.Dir) {
+                    message += $"{item.Name}\n";
+                }
+            }
+
+            var embed = new DiscordEmbedBuilder()
+                .WithColor(DiscordColor.Yellow)
+                .WithTitle("Root directory")
+                .WithDescription(message);
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+        }
+
+        [SlashCommand("getsolution", "get the leetcode solution for a problem. choose the problem from the list of directories and files")]
+        public 
 
         // COMMUNITY RELATED COMMANDS
 

@@ -21,6 +21,7 @@ namespace discordBot {
         public DiscordClient? Client { get; private set; }
         public InteractivityExtension? Interactivity { get; private set; }
         public SlashCommandsExtension? SlashCommands { get; private set; }
+        
 
         public async Task RunAsync() {
             // sets up our api in a way that prevents hardcoding the api-key by using a file reading system
@@ -31,11 +32,6 @@ namespace discordBot {
             Client.UseInteractivity(new InteractivityConfiguration() {
                 Timeout = TimeSpan.FromMinutes(2)
             });
-
-            // initializing github api client
-            var GitHubClient = Config.GitHubClient;
-
-            if (GitHubClient != null) { await Console.Out.WriteLineAsync("github client was initialized successfully"); }
 
             // register commands
             SlashCommands = Client.UseSlashCommands();
@@ -59,7 +55,7 @@ namespace discordBot {
                         Color = DiscordColor.Gold,
                         Title = "LeetCode Commands",
                         Description = "***repo*** --> returns a link to the github repo with leetcode solutions\n\n" +
-                                      "more commands for getting and returning repo info will be added"
+                                      "more commands for getting and returning repo info will be added with the implementation of the github api"
                     };
 
                     await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(leetcodeCommandsList));
