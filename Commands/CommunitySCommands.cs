@@ -1,78 +1,38 @@
-﻿using discordBot.ExternalClasses;
-using DSharpPlus;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace discordBot.Commands {
-    public class SlashCommands : ApplicationCommandModule {
-
-        //public GitHubClient ghClient { get; set; }
-
-        // LEETCODE REPO RELATED COMMANDS
-
-        [SlashCommand("repo", "Link to the LC solutions github repo.")]
-        [SlashCooldown(1, 10, SlashCooldownBucketType.User)]
-        public async Task GetRepoLink(InteractionContext ctx) {
-            var linkMessage = new DiscordInteractionResponseBuilder()
-                                .AddEmbed(new DiscordEmbedBuilder()
-
-                                .WithColor(DiscordColor.Goldenrod)
-                                .WithTitle("LeetCode solutions repository")
-                                .WithUrl("https://github.com/thuanle123/Leetcode")
-                                .WithAuthor("thuanle123")
-                                .WithDescription("Solutions written in Python, C#, and Java!\n https://github.com/thuanle123/Leetcode")
-                                );	
-                                
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, linkMessage);
-        }
-
-        [SlashCommand("root", "root directory info. test command for now to play around w github api")]
-        public async Task GetRoot(InteractionContext ctx) {
-            // GET /repos/{owner}/{repo}/contents/{path}
-            // owner and repo will be hard coded since these commands only concern ty's LC repo
-
-            await ctx.DeferAsync();
-
-            var config = new CreateConfig();
-            var ghClient = new GitHubClient(new ProductHeaderValue("loogibot")) {
-                Credentials = config.GitHubToken
-            };
-
-            
-            var info = await ghClient.Repository.Content.GetAllContents("thuanle123", "Leetcode");
-
-            string message = string.Empty;
-            foreach (var item in info) {
-                if(item.Type == ContentType.Dir) {
-                    message += $"{item.Name}\n";
-                }
-            }
-
-            var embed = new DiscordEmbedBuilder()
-                .WithColor(DiscordColor.Yellow)
-                .WithTitle("Root directory")
-                .WithDescription(message);
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
-        }
-
-        [SlashCommand("getsolution", "get the leetcode solution for a problem. choose the problem from the list of directories and files")]
-        public 
+    public class CommunitySCommands : ApplicationCommandModule {
 
         // COMMUNITY RELATED COMMANDS
 
+        [SlashCommand("help", "general help command for all commands offered")]
+        public async Task HelpCommand(InteractionContext ctx) {
+
+            await ctx.DeferAsync();
+
+            var leetcodeButton = new DiscordButtonComponent(ButtonStyle.Primary, "leetcodeButton", "LeetCode");
+            var communityButton = new DiscordButtonComponent(ButtonStyle.Primary, "communityButton", "Community");
+
+            var helpMessage = new DiscordEmbedBuilder()
+                .WithColor(DiscordColor.Lilac)
+                .WithTitle("Help menu")
+                .WithDescription("Click on a button for more information about the command!");
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(helpMessage).AddComponents(leetcodeButton, communityButton));
+        }
+
         [SlashCommand("createpoll", "create a poll and let users vote")]
         [SlashCooldown(1, 60, SlashCooldownBucketType.Channel)]
-        public async Task PollCommand(InteractionContext ctx,   [Option("question", "poll subject")] string question,
+        public async Task PollCommand(InteractionContext ctx, [Option("question", "poll subject")] string question,
                                                                 [Choice("60s", 60)][Choice("30s", 30)][Choice("15s", 15)]
                                                                     [Option("timelimit", "the amount of time that the poll is active")] long timelimit,
                                                                 [Option("option1", "first option")] string option1,
@@ -83,19 +43,19 @@ namespace discordBot.Commands {
             await ctx.DeferAsync();
 
             var interactivity = ctx.Client.GetInteractivity();
-            int count1 = 0; int count2 = 0;	int count3 = 0; int count4 = 0;
+            int count1 = 0; int count2 = 0; int count3 = 0; int count4 = 0;
             TimeSpan timer = TimeSpan.FromSeconds(timelimit);
             string title = String.Join("", question);
 
             DiscordEmoji[] optionsEmojis = {    DiscordEmoji.FromName(ctx.Client, ":one:", false),
-                                                DiscordEmoji.FromName(ctx.Client, ":two:", false), 
+                                                DiscordEmoji.FromName(ctx.Client, ":two:", false),
                                                 DiscordEmoji.FromName(ctx.Client, ":three:", false),
                                                 DiscordEmoji.FromName(ctx.Client, ":four:", false) };
 
-            string pollOptionsStrings = (   $"{optionsEmojis[0]} | {option1}\n" +
+            string pollOptionsStrings = ($"{optionsEmojis[0]} | {option1}\n" +
                                             $"{optionsEmojis[1]} | {option2}\n" +
                                             $"{optionsEmojis[2]} | {option3}\n" +
-                                            $"{optionsEmojis[3]} | {option4}"   );
+                                            $"{optionsEmojis[3]} | {option4}");
 
             var pollMessage = new DiscordEmbedBuilder() {
                 Color = DiscordColor.Sienna,
@@ -105,7 +65,7 @@ namespace discordBot.Commands {
 
             var message = await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(pollMessage));
 
-            foreach( var emoji in optionsEmojis ) {
+            foreach (var emoji in optionsEmojis) {
                 await message.CreateReactionAsync(emoji);
             }
 
@@ -118,17 +78,17 @@ namespace discordBot.Commands {
                     count2++;
                 if (emoji.Emoji == optionsEmojis[2])
                     count3++;
-                if (emoji.Emoji == optionsEmojis[3]) 
+                if (emoji.Emoji == optionsEmojis[3])
                     count4++;
             }
 
             int totalVotes = count1 + count2 + count3 + count4;
 
-            string resultsStrings = (   $"{optionsEmojis[0]} | {count1} votes\n" +
+            string resultsStrings = ($"{optionsEmojis[0]} | {count1} votes\n" +
                                         $"{optionsEmojis[1]} | {count2} votes\n" +
                                         $"{optionsEmojis[2]} | {count3} votes\n" +
                                         $"{optionsEmojis[3]} | {count4} votes\n\n" +
-                                        $"Total votes: {totalVotes}"    );
+                                        $"Total votes: {totalVotes}");
 
             var resultMessage = new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder() {
@@ -142,7 +102,7 @@ namespace discordBot.Commands {
         }
 
         [SlashCommand("caption", "attach an image and then write a caption")]
-        public async Task CaptionCommand(InteractionContext ctx,    [Option("image", "attach an image to caption")] DiscordAttachment image,
+        public async Task CaptionCommand(InteractionContext ctx, [Option("image", "attach an image to caption")] DiscordAttachment image,
                                                                     [Option("caption", "bottom text")] string caption) {
 
             await ctx.DeferAsync();
@@ -158,27 +118,9 @@ namespace discordBot.Commands {
             await ctx.Channel.SendMessageAsync(captionMessage);
         }
 
-        // MODERATION RELATED COMMANDS
 
-        [SlashCommand("help", "general help command for all commands offered")]
-        public async Task HelpCommand(InteractionContext ctx) {
-
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-
-            var leetcodeButton = new DiscordButtonComponent(ButtonStyle.Primary, "leetcodeButton", "LeetCode");
-            var communityButton = new DiscordButtonComponent(ButtonStyle.Primary, "communityButton", "Community");
-
-            var helpMessage = new DiscordEmbedBuilder()
-                .WithColor(DiscordColor.Lilac)
-                .WithTitle("Help menu")
-                .WithDescription("Click on a button for more information about the command!");
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(helpMessage).AddComponents(leetcodeButton, communityButton));
-        }
-
-        
         [SlashCommand("test", "test slash command using whatever the fk")]
-        public async Task TestCommand(InteractionContext ctx,   [Choice("variable", "value")]
+        public async Task TestCommand(InteractionContext ctx, [Choice("variable", "value")]
                                                                 [Option("displayName", "description of what to input")] string text) {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
                                                                                                 .WithContent("test"));
