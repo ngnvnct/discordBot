@@ -85,7 +85,7 @@ namespace discordBot.Commands {
         [SlashRequirePermissions(Permissions.MuteMembers)]
         public async Task Timeout(InteractionContext ctx, [Option("user", "user to timeout")] DiscordUser user,
                                                           [Choice("60s", 60)][Choice("5m", 300)][Choice("10m", 600)]
-                                                          [Option("duration", "duration of timeout")] long duration) {
+                                                            [Option("duration", "duration of timeout")] long duration) {
             await ctx.DeferAsync();
 
             var muteUntil = DateTime.Now + TimeSpan.FromSeconds(duration);

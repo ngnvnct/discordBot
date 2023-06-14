@@ -48,19 +48,32 @@ namespace discordBot.Commands {
 
             var info = await ghClient.Repository.Content.GetAllContents("thuanle123", "Leetcode");
 
-            string message = string.Empty;
+            List<string> directories = new List<string>();
+            List<string> directoryLinks = new List<string>();
+
             foreach (var item in info) {
                 if (item.Type == ContentType.Dir) {
-                    message += $"{item.Name}\n";
+                    directories.Add(item.Name);
+                    directoryLinks.Add(item.HtmlUrl);
                 }
             }
 
-            var embed = new DiscordEmbedBuilder()
-                .WithColor(DiscordColor.Yellow)
-                .WithTitle("Root directory")
-                .WithDescription(message);
+            var message = new DiscordMessageBuilder()
+                .AddEmbed (new DiscordEmbedBuilder()
+                    .WithColor(DiscordColor.SpringGreen)
+                    .WithTitle("***Root directory***")
+                    .WithUrl("https://github.com/thuanle123/Leetcode"));
 
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+
+            for (int i = 0; i < directories.Count; i++) {
+                message.AddEmbed(new DiscordEmbedBuilder()
+                    .WithColor(DiscordColor.Gold)
+                    .WithTitle(directories[i])
+                    .WithUrl(directoryLinks[i])
+                    );
+            }
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder(message));
         }
     }
 }
