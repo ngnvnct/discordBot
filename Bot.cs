@@ -70,7 +70,7 @@ namespace discordBot {
                     var communityCommandsList = new DiscordEmbedBuilder() {
                         Color = DiscordColor.Lilac,
                         Title = "Community Commands",
-                        Description = "***createpoll*** --> create a poll and vote with reactions set by the command\n\n" +
+                        Description = "***createpoll*** --> create a poll and vote with reactions set by the command\n" +
                                       "***caption*** --> attach any saved image and give it a caption"
                     };
 
