@@ -1,19 +1,12 @@
 ﻿using discordBot.ExternalClasses;
 using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Octokit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace discordBot.Commands {
-    
+
     public class GithubSCommands : ApplicationCommandModule {
         private GitHubClient CreateClient() {
             var config = new CreateConfig();
@@ -81,6 +74,32 @@ namespace discordBot.Commands {
 
                 buttonList.Add(new DiscordLinkButtonComponent(directories[i].HtmlUrl, directories[i].Name));
             }
+
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder(message));
+        }
+
+        [SlashCommand("solution", "select different options to find the solution you want")]
+        public async Task GetSolution(InteractionContext ctx) {
+            await ctx.DeferAsync();
+
+            var ghClient = CreateClient();
+
+            var info = await ghClient.Repository.Content.GetAllContents("thuanle123", "Leetcode");
+            List<DiscordSelectComponentOption> languages = new List<DiscordSelectComponentOption>();    // must be a list of componentoptions
+            foreach ( var item in info) { 
+                if (item.Type == ContentType.Dir && item.Name[0] != '.')
+                    languages.Add(new DiscordSelectComponentOption($"{item.Name}", $"{item.Name}"));
+            }
+            var langOptions = languages.AsEnumerable(); // convert list to enumerable in order to pass it into a component
+
+            var languageDropDown = new DiscordSelectComponent("directoryDropDown", "Select language...", langOptions);
+
+            var message = new DiscordMessageBuilder()
+                .AddEmbed(new DiscordEmbedBuilder()
+                    .WithColor(DiscordColor.HotPink)
+                    .WithTitle("**Leetcode solutions explorer**")
+                    .WithDescription("Choose your language"))
+                .AddComponents(languageDropDown);
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder(message));
         }

@@ -1,19 +1,22 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace discordBot.Commands {
     public class CommunitySCommands : ApplicationCommandModule {
 
         // COMMUNITY RELATED COMMANDS
 
+        [SlashCommand("confess", "confess your sins with an anonymous message")]
+        public async Task ConfessionalCommand(InteractionContext ctx) {
+            await ctx.DeferAsync(true);
+            await ctx.DeleteResponseAsync();
+
+            await ctx.Channel.SendMessageAsync("test");
+        }
+        
         [SlashCommand("help", "general help command for all commands offered")]
         public async Task HelpCommand(InteractionContext ctx) {
 

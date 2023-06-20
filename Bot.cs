@@ -1,7 +1,6 @@
 ﻿using discordBot.Commands;
 using discordBot.ExternalClasses;
 using DSharpPlus;
-using DSharpPlus.AsyncEvents;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
@@ -9,13 +8,6 @@ using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using Newtonsoft.Json;
-using Octokit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace discordBot {
     public class Bot {
@@ -46,12 +38,21 @@ namespace discordBot {
 
             Client.Ready += OnClientReady;
             Client.ComponentInteractionCreated += OnButtonPress;
+            Client.ComponentInteractionCreated += DropDownEvent;
 
             await Client.ConnectAsync();
             await Task.Delay(-1);
 
         }
 
+        private async Task DropDownEvent(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
+            if (e.Id == "directoryDropDown" && e.Interaction.Data.ComponentType == ComponentType.StringSelect) {
+                var options = e.Values;
+                foreach (var language in options) {
+
+                }
+            }
+        }
         private async Task OnButtonPress(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
             switch (e.Interaction.Data.CustomId) {
                 case "leetcodeButton":

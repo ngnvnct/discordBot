@@ -1,13 +1,7 @@
 ﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.SlashCommands;
 using Newtonsoft.Json;
 using Octokit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace discordBot.ExternalClasses {
     internal class CreateConfig {
