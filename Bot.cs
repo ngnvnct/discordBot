@@ -92,6 +92,7 @@ namespace discordBot {
                     break;
 
                 case "algoDropDown":
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("boop"));
                     break;
             }
         }
