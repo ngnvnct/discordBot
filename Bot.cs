@@ -8,13 +8,22 @@ using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
+using Octokit;
 
 namespace discordBot {
     public class Bot {
         public DiscordClient? Client { get; private set; }
         public InteractivityExtension? Interactivity { get; private set; }
         public SlashCommandsExtension? SlashCommands { get; private set; }
-        
+        public long LEETCODEREPOID = 455058602;
+
+        private GitHubClient CreateClient() {
+            var config = new CreateConfig();
+            var ghClient = new GitHubClient(new ProductHeaderValue("loogibot")) {
+                Credentials = config.GitHubToken
+            };
+            return ghClient;
+        }
 
         public async Task RunAsync() {
             // sets up our api in a way that prevents hardcoding the api-key by using a file reading system
@@ -36,6 +45,7 @@ namespace discordBot {
             // error handling
             SlashCommands.SlashCommandErrored += OnSlashCommandError;
 
+            // event handler subscriptions
             Client.Ready += OnClientReady;
             Client.ComponentInteractionCreated += OnButtonPress;
             Client.ComponentInteractionCreated += DropDownEvent;
@@ -46,11 +56,40 @@ namespace discordBot {
         }
 
         private async Task DropDownEvent(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
-            if (e.Id == "directoryDropDown" && e.Interaction.Data.ComponentType == ComponentType.StringSelect) {
-                var options = e.Values;
-                foreach (var language in options) {
+            switch (e.Id) {
 
-                }
+                case "directoryDropDown":
+                    await e.Interaction.DeferAsync();
+                
+                    var ghClient = CreateClient();
+
+                    var language = e.Values[0];
+                    string path = $"{language}";
+
+                    if (language == "JavaMaven")
+                        path += "/src/test/java/";
+                    else if (language == "csharp")
+                        path += "/solution_and_tests/";
+
+                    var info = await ghClient.Repository.Content.GetAllContents(LEETCODEREPOID, path);
+                    List<DiscordSelectComponentOption> algos = new List<DiscordSelectComponentOption>();
+                
+                    foreach (var item in info) {
+                        if (item.Type == ContentType.Dir)
+                            algos.Add(new DiscordSelectComponentOption(item.Name, item.Name));
+                    }
+                    var algoOptions = algos.AsEnumerable();
+                    var algoDropDown = new DiscordSelectComponent("algoDropDown", "Select algorithm...", algoOptions);
+
+                    var message = new DiscordMessageBuilder()
+                        .AddEmbed(new DiscordEmbedBuilder()
+                            .WithColor(DiscordColor.Azure)
+                            .WithTitle("Choose algorithm"))
+                        .AddComponents(algoDropDown);
+
+                    await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder(message));
+
+                    break;
             }
         }
         private async Task OnButtonPress(DiscordClient sender, ComponentInteractionCreateEventArgs e) {

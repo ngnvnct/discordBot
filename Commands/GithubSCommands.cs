@@ -86,9 +86,9 @@ namespace discordBot.Commands {
 
             var info = await ghClient.Repository.Content.GetAllContents("thuanle123", "Leetcode");
             List<DiscordSelectComponentOption> languages = new List<DiscordSelectComponentOption>();    // must be a list of componentoptions
-            foreach ( var item in info) { 
+            foreach ( var item in info) {
                 if (item.Type == ContentType.Dir && item.Name[0] != '.')
-                    languages.Add(new DiscordSelectComponentOption($"{item.Name}", $"{item.Name}"));
+                    languages.Add(new DiscordSelectComponentOption(item.Name, item.Name));
             }
             var langOptions = languages.AsEnumerable(); // convert list to enumerable in order to pass it into a component
 
