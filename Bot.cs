@@ -90,8 +90,12 @@ namespace discordBot {
                     await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder(message));
 
                     break;
+
+                case "algoDropDown":
+                    break;
             }
         }
+
         private async Task OnButtonPress(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
             switch (e.Interaction.Data.CustomId) {
                 case "leetcodeButton":
