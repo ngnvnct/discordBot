@@ -33,7 +33,7 @@ namespace discordBot {
             Client = new DiscordClient(Config.Configuration);
             Client.UseInteractivity(new InteractivityConfiguration() {
                 PollBehaviour = PollBehaviour.KeepEmojis,
-                Timeout = TimeSpan.FromMinutes(2)
+                Timeout = TimeSpan.FromSeconds(30)
             });
 
             // register commands
@@ -56,27 +56,28 @@ namespace discordBot {
         }
 
         private async Task DropDownEvent(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
-            switch (e.Id) {
+            
+            var ghClient = CreateClient();
 
+            switch (e.Id) {
+                // TODO: fix code duplication for getting github repo content with path, making the list, and outputting the message
                 case "directoryDropDown":
                     await e.Interaction.DeferAsync();
-                
-                    var ghClient = CreateClient();
 
                     var language = e.Values[0];
-                    string path = $"{language}";
+                    string path = $"{language}/";
 
                     if (language == "JavaMaven")
-                        path += "/src/test/java/";
+                        path += "src/test/java/";
                     else if (language == "csharp")
-                        path += "/solution_and_tests/";
+                        path += "solution_and_tests/";
 
                     var info = await ghClient.Repository.Content.GetAllContents(LEETCODEREPOID, path);
                     List<DiscordSelectComponentOption> algos = new List<DiscordSelectComponentOption>();
                 
                     foreach (var item in info) {
                         if (item.Type == ContentType.Dir)
-                            algos.Add(new DiscordSelectComponentOption(item.Name, item.Name));
+                            algos.Add(new DiscordSelectComponentOption(item.Name, $"{path}{item.Name}/"));
                     }
                     var algoOptions = algos.AsEnumerable();
                     var algoDropDown = new DiscordSelectComponent("algoDropDown", "Select algorithm...", algoOptions);
@@ -88,11 +89,36 @@ namespace discordBot {
                         .AddComponents(algoDropDown);
 
                     await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder(message));
-
                     break;
 
                 case "algoDropDown":
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("boop"));
+                    await e.Interaction.DeferAsync();
+                    
+                    var selectedAlgoPath = e.Values[0];
+
+                    var algoContent = await ghClient.Repository.Content.GetAllContents(LEETCODEREPOID, selectedAlgoPath);
+                    List<DiscordSelectComponentOption> problems = new List<DiscordSelectComponentOption>();
+
+                    foreach (var item in algoContent) {
+                        problems.Add(new DiscordSelectComponentOption(item.Name, $"{selectedAlgoPath}{item.Name}"));
+                    }
+                    var problemsOptions = problems.AsEnumerable();
+                    var problemsDropDown = new DiscordSelectComponent("problemsDropDown", "Select problem...", problemsOptions);
+
+                    var problemsMessage = new DiscordMessageBuilder()
+                        .AddEmbed(new DiscordEmbedBuilder()
+                            .WithColor(DiscordColor.Grayple)
+                            .WithTitle("Choose problem"))
+                        .AddComponents(problemsDropDown);
+
+                    await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder(problemsMessage));
+                    break;
+
+                case "problemsDropDown":
+                    await e.Interaction.DeferAsync();
+
+                    var selectedSolution = e.Values.FirstOrDefault();
+
                     break;
             }
         }
