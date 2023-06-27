@@ -31,6 +31,8 @@ namespace discordBot {
             var Config = new CreateConfig();
 
             Client = new DiscordClient(Config.Configuration);
+            
+            // set up interactivity
             Client.UseInteractivity(new InteractivityConfiguration() {
                 PollBehaviour = PollBehaviour.KeepEmojis,
                 Timeout = TimeSpan.FromSeconds(30)
@@ -42,22 +44,23 @@ namespace discordBot {
             SlashCommands.RegisterCommands<ModerationSCommands>(Config.ConfigJson.GuildID);
             SlashCommands.RegisterCommands<CommunitySCommands>(Config.ConfigJson.GuildID);
 
-            // error handling
-            SlashCommands.SlashCommandErrored += OnSlashCommandError;
 
             // event handler subscriptions
             Client.Ready += OnClientReady;
             Client.ComponentInteractionCreated += OnButtonPress;
             Client.ComponentInteractionCreated += DropDownEvent;
 
+            // error handling
+            SlashCommands.SlashCommandErrored += OnSlashCommandError;
+
             await Client.ConnectAsync();
             await Task.Delay(-1);
-
         }
 
         private async Task DropDownEvent(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
             
             var ghClient = CreateClient();
+            var interactivity = sender.GetInteractivity();
 
             switch (e.Id) {
                 // TODO: fix code duplication for getting github repo content with path, making the list, and outputting the message
@@ -118,6 +121,14 @@ namespace discordBot {
                     await e.Interaction.DeferAsync();
 
                     var selectedSolution = e.Values.FirstOrDefault();
+                    var solutionInfo = await ghClient.Repository.Content.GetAllContents(LEETCODEREPOID, selectedSolution);
+
+                    var solutionContent = await ghClient.Repository.Content.GetRawContent("thuanle123", "Leetcode", selectedSolution);
+                    var solutionContentAsString = System.Text.Encoding.UTF8.GetString(solutionContent);
+                    var messagePages = interactivity.GeneratePagesInContent($"{solutionContentAsString}");
+
+                    await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().WithContent($"{e.User.Mention} -- Solution for: {solutionInfo[0].Name}"));
+                    await e.Channel.SendPaginatedMessageAsync(e.User, messagePages);
 
                     break;
             }

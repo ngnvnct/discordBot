@@ -97,8 +97,7 @@ namespace discordBot.Commands {
             var message = new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder()
                     .WithColor(DiscordColor.HotPink)
-                    .WithTitle("**Leetcode solutions explorer**")
-                    .WithDescription("Choose your language"))
+                    .WithTitle("Choose language"))
                 .AddComponents(languageDropDown);
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder(message));
