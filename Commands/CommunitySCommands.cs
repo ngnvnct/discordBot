@@ -11,10 +11,13 @@ namespace discordBot.Commands {
 
         [SlashCommand("confess", "confess your sins with an anonymous message")]
         public async Task ConfessionalCommand(InteractionContext ctx) {
-            await ctx.DeferAsync(true);
-            await ctx.DeleteResponseAsync();
 
-            await ctx.Channel.SendMessageAsync("test");
+            var modalBuilder = new DiscordInteractionResponseBuilder()
+                .WithTitle("Confess your sins.")
+                .WithCustomId("confession")
+                .AddComponents(new TextInputComponent("Forgive me, father, for I have sinned.", "confessionalTextBox", null, null, true));
+
+            await ctx.CreateResponseAsync(InteractionResponseType.Modal, modalBuilder);
         }
         
         [SlashCommand("help", "general help command for all commands offered")]

@@ -95,9 +95,6 @@ namespace discordBot.Commands {
             var languageDropDown = new DiscordSelectComponent("directoryDropDown", "Select language...", langOptions);
 
             var message = new DiscordMessageBuilder()
-                .AddEmbed(new DiscordEmbedBuilder()
-                    .WithColor(DiscordColor.HotPink)
-                    .WithTitle("Choose language"))
                 .AddComponents(languageDropDown);
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder(message));

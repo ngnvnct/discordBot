@@ -49,12 +49,27 @@ namespace discordBot {
             Client.Ready += OnClientReady;
             Client.ComponentInteractionCreated += OnButtonPress;
             Client.ComponentInteractionCreated += DropDownEvent;
+            Client.ModalSubmitted += ModalSubmissionEventHandler;
 
             // error handling
             SlashCommands.SlashCommandErrored += OnSlashCommandError;
 
             await Client.ConnectAsync();
             await Task.Delay(-1);
+        }
+
+        private async Task ModalSubmissionEventHandler(DiscordClient sender, ModalSubmitEventArgs e) {
+            if (e.Interaction.Type == InteractionType.ModalSubmit) {
+                var values = e.Values;  // represents all components in the modal
+                var confessMessage = new DiscordMessageBuilder()
+                    .AddEmbed(new DiscordEmbedBuilder()
+                        .WithColor(DiscordColor.Brown)
+                        .WithTitle($"**{values.Values.First()}**"));
+
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("confession sent").AsEphemeral(true));
+
+                await e.Interaction.Channel.SendMessageAsync(confessMessage);
+            }
         }
 
         private async Task DropDownEvent(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
@@ -76,20 +91,33 @@ namespace discordBot {
                         path += "solution_and_tests/";
 
                     var info = await ghClient.Repository.Content.GetAllContents(LEETCODEREPOID, path);
-                    List<DiscordSelectComponentOption> algos = new List<DiscordSelectComponentOption>();
+                    var message = new DiscordMessageBuilder();
+                    List<DiscordSelectComponentOption> optionsList = new List<DiscordSelectComponentOption>();
                 
+                    if (language == "sql") {
+                        foreach (var item in info)
+                            optionsList.Add(new DiscordSelectComponentOption(item.Name, $"{path}{item.Name}/"));
+
+                        var SQLoptions = optionsList.AsEnumerable();
+
+                        var SQLdropDown = new DiscordSelectComponent("problemsDropDown", "Select problem...", SQLoptions);
+                        message.AddComponents(SQLdropDown);
+
+                        await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder(message));
+
+                        break;
+                    }
+
                     foreach (var item in info) {
                         if (item.Type == ContentType.Dir)
-                            algos.Add(new DiscordSelectComponentOption(item.Name, $"{path}{item.Name}/"));
+                            optionsList.Add(new DiscordSelectComponentOption(item.Name, $"{path}{item.Name}"));
                     }
-                    var algoOptions = algos.AsEnumerable();
-                    var algoDropDown = new DiscordSelectComponent("algoDropDown", "Select algorithm...", algoOptions);
 
-                    var message = new DiscordMessageBuilder()
-                        .AddEmbed(new DiscordEmbedBuilder()
-                            .WithColor(DiscordColor.Azure)
-                            .WithTitle("Choose algorithm"))
-                        .AddComponents(algoDropDown);
+                    var options = optionsList.AsEnumerable();
+
+                    var dropDown = new DiscordSelectComponent("algoDropDown", "Select algorithm...", options);
+
+                    message.AddComponents(dropDown);
 
                     await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder(message));
                     break;
@@ -109,9 +137,6 @@ namespace discordBot {
                     var problemsDropDown = new DiscordSelectComponent("problemsDropDown", "Select problem...", problemsOptions);
 
                     var problemsMessage = new DiscordMessageBuilder()
-                        .AddEmbed(new DiscordEmbedBuilder()
-                            .WithColor(DiscordColor.Grayple)
-                            .WithTitle("Choose problem"))
                         .AddComponents(problemsDropDown);
 
                     await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder(problemsMessage));
