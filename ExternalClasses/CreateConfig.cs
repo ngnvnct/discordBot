@@ -1,6 +1,7 @@
 ﻿using DSharpPlus;
 using Newtonsoft.Json;
 using Octokit;
+using OpenAI_API;
 using System.Text;
 
 namespace discordBot.ExternalClasses {
@@ -8,6 +9,7 @@ namespace discordBot.ExternalClasses {
         public ConfigJson ConfigJson { get; internal set; }
         public DiscordConfiguration Configuration { get; internal set; }
         public Credentials GitHubToken { get; internal set; }
+        public OpenAIAPI OpenAIAPI { get; internal set; }
         public CreateConfig() {
             var json = string.Empty;
             using(var fs = File.OpenRead("config.json"))
@@ -17,6 +19,8 @@ namespace discordBot.ExternalClasses {
             this.ConfigJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
             this.GitHubToken = new Credentials(this.ConfigJson.GithubToken);
+
+            this.OpenAIAPI = new OpenAIAPI(this.ConfigJson.ChatGPTToken);
 
             this.Configuration = new DiscordConfiguration() {
                 Intents = DiscordIntents.All,

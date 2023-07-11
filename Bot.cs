@@ -44,9 +44,9 @@ namespace discordBot {
             SlashCommands.RegisterCommands<ModerationSCommands>(Config.ConfigJson.GuildID);
             SlashCommands.RegisterCommands<CommunitySCommands>(Config.ConfigJson.GuildID);
 
+            Client.Ready += OnClientReady;
 
             // event handler subscriptions
-            Client.Ready += OnClientReady;
             Client.ComponentInteractionCreated += OnButtonPress;
             Client.ComponentInteractionCreated += DropDownEvent;
             Client.ModalSubmitted += ModalSubmissionEventHandler;
@@ -60,13 +60,21 @@ namespace discordBot {
 
         private async Task ModalSubmissionEventHandler(DiscordClient sender, ModalSubmitEventArgs e) {
             if (e.Interaction.Type == InteractionType.ModalSubmit) {
+
                 var values = e.Values;  // represents all components in the modal
+                var timeStamp = e.Interaction.CreationTimestamp;
+
                 var confessMessage = new DiscordMessageBuilder()
                     .AddEmbed(new DiscordEmbedBuilder()
                         .WithColor(DiscordColor.Brown)
-                        .WithTitle($"**{values.Values.First()}**"));
+                        .WithTitle($"**{values.Values.First()}**")
+                        .WithFooter(timeStamp
+                            .ToLocalTime()
+                            .DateTime
+                            .ToString())
+                        );
 
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("confession sent").AsEphemeral(true));
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Confession received, amen {DiscordEmoji.FromName(sender, ":pray:")}").AsEphemeral(true));
 
                 await e.Interaction.Channel.SendMessageAsync(confessMessage);
             }
@@ -166,7 +174,8 @@ namespace discordBot {
                         Color = DiscordColor.Gold,
                         Title = "LeetCode Commands",
                         Description = "***repo*** --> returns a link to the github repo with leetcode solutions\n" +
-                                      "***root*** --> returns the root directory contents\n\n" +
+                                      "***root*** --> returns the root directory contents\n" +
+                                      "***solution*** --> initiates the repo browser via dropdown menus\n\n" +
                                       "more commands for getting and returning repo info will be added with the implementation of the github api"
                     };
 
@@ -178,7 +187,8 @@ namespace discordBot {
                         Color = DiscordColor.Lilac,
                         Title = "Community Commands",
                         Description = "***createpoll*** --> create a poll and vote with reactions set by the command\n" +
-                                      "***caption*** --> attach any saved image and give it a caption"
+                                      "***caption*** --> attach any saved image and give it a caption\n" +
+                                      "***confess*** --> send an anonymous message to this channel"
                     };
 
                     await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(communityCommandsList));

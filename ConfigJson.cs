@@ -10,5 +10,7 @@ namespace discordBot {
         public ulong GuildID { get; private set; }
         [JsonProperty("githubToken")]
         public string GithubToken { get; private set; }
+        [JsonProperty("chatGPTToken")]
+        public string ChatGPTToken { get; private set; }
     }
 }

@@ -10,7 +10,7 @@ namespace discordBot.Commands {
         // MODERATION RELATED COMMANDS
 
         [SlashCommand("help", "list of moderation commands")]
-        [SlashRequirePermissions(Permissions.Administrator)]
+        [SlashRequirePermissions(Permissions.KickMembers)]
         public async Task ModHelp(InteractionContext ctx) {
 
             await ctx.DeferAsync(true);
